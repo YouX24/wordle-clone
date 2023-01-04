@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+#root {
+    background-color: #121213;
+}
+
+.wordle-title {
+    font-family: 'Noto Serif', serif;
+}
+
+* {
+    font-family: 'Poppins', sans-serif;
+}
