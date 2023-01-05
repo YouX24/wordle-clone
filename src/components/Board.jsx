@@ -1,19 +1,9 @@
 import React from "react";
 import Tile from "./Tile"
 
-const Board = () => {
-
-    
-    const newGame = () => {
-        const tileLetter = []
-        for (let i = 0; i < 30; i++) {
-            tileLetter.push("")
-        }
-        return tileLetter
-    }
-
-    const [tile, setTile] = React.useState(newGame())
-    const tileElements = tile.map(t => <Tile/>)
+const Board = (props) => {
+    console.log(props.tile)
+    const tileElements = props.tile.map(t => <Tile letter={t}/>)
 
     return (
         <div className="flex justify-center m-3">
