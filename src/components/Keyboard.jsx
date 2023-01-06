@@ -22,7 +22,7 @@ const Keyboard = (props) => {
                 {rowTwoBtns}
             </div>
             <div className="flex justify-center">
-                <Largebtn letter="ENTER" inputToBoard={props.inputToBoard}/>
+                <Largebtn letter="ENTER" submit={props.submit}/>
                 {rowThreeBtns}
                 <Largebtn letter="<--" backspace={props.backspace}/>
             </div>
