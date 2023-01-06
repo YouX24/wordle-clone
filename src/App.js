@@ -2,10 +2,11 @@ import React, { useState }from "react";
 import Header from "./components/Header";
 import Board from "./components/Board";
 import Keyboard from "./components/Keyboard";
+import allWords from "./data/allWords";
 
 const App = () => {
 
-  const newGame = () => {
+  const freshBoard = () => {
     const tileLetter = []
     for (let i = 0; i < 30; i++) {
         tileLetter.push("")
@@ -13,21 +14,39 @@ const App = () => {
     return tileLetter
   }
 
-  const [tile, setTile] = useState(newGame())
+  const getRandomWord = () => {
+    const randomIndex = Math.floor(Math.random() * allWords.length)
+    return allWords[randomIndex].toUpperCase()
+  }
+
+  const [word, setWord] = useState(getRandomWord())
+  const [tile, setTile] = useState(freshBoard())
   const [index, setIndex] = useState(0)
   const [startTile, setStartTile] = useState(0)
   const [endTile, setEndTile] = useState(4)
 
+  // Resets the board and starts a new game
+  const newGame = () => {
+    setWord(getRandomWord())
+    setTile(freshBoard())
+    setIndex(0)
+    setStartTile(0)
+    setEndTile(4)
+  }
+
+  // Add letter to the board
   const inputToBoard = (e) => {
     if (index < startTile || index > endTile) {
       return
     }
+    getRandomWord()
     let tileCopy = [...tile] // shallow copy of tile state
     tileCopy[index] = e.target.innerHTML // change shallow copy array element
     setIndex(index + 1) // increment index state
     setTile([...tileCopy]) // set the state to the updated shallow copy of tile state
   }
 
+  // Remove latest letter from the board
   const backspace = () => {
     if (index === startTile) {
       return
@@ -36,22 +55,23 @@ const App = () => {
     tileCopy[index - 1] = ""
     setIndex(index - 1)
     setTile([...tileCopy])
-    console.log("back")
   }
 
+  // Submit and check if guess is correct
   const submit = () => {
     if (startTile === 25) {
       console.log("GAME IS ALREADY OVER")
       return
-    }
-    if (index - 1 === endTile) {
+    } else if (index - 1 === endTile) {
+      console.log(word)
       setStartTile(startTile + 5)
       setEndTile(endTile + 5)
     }
 
-    // TODO: END GAME CONDITION, functionality when game is finished
-    if (startTile === 25) {
-      console.log("GAME OVER")
+    // TODO: END GAME CONDITION, Word is guessed correctly
+    if (tile.slice(startTile, endTile + 1).join("") === word) {
+      console.log("PASS")
+      newGame()
     }
   }
 
