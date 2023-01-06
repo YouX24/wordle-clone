@@ -7,9 +7,9 @@ const Keyboard = (props) => {
     const rowTwo = ["A", "S", "D", "F", "G", "H", "J", "K", "L"]
     const rowThree = ["Z", "X", "C", "V", "B", "N", "M"]
 
-    const rowOneBtns = rowOne.map(b => <Button letter={b} pFun={props.pFun}/>)
-    const rowTwoBtns = rowTwo.map(b => <Button letter={b} />)
-    const rowThreeBtns = rowThree.map(b => <Button letter={b} />)
+    const rowOneBtns = rowOne.map(b => <Button letter={b} inputToBoard={props.inputToBoard}/>)
+    const rowTwoBtns = rowTwo.map(b => <Button letter={b} inputToBoard={props.inputToBoard}/>)
+    const rowThreeBtns = rowThree.map(b => <Button letter={b} inputToBoard={props.inputToBoard}/>)
 
 
     
@@ -22,9 +22,9 @@ const Keyboard = (props) => {
                 {rowTwoBtns}
             </div>
             <div className="flex justify-center">
-                <Largebtn letter="ENTER"/>
+                <Largebtn letter="ENTER" inputToBoard={props.inputToBoard}/>
                 {rowThreeBtns}
-                <Largebtn letter="<--"/>
+                <Largebtn letter="<--" backspace={props.backspace}/>
             </div>
         </div>
     )
