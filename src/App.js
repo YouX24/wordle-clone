@@ -9,7 +9,14 @@ const App = () => {
   const freshBoard = () => {
     const tileLetter = []
     for (let i = 0; i < 30; i++) {
-        tileLetter.push("")
+        tileLetter.push(
+          {
+            letter: "",
+            inWord: false,
+            inPlace: false,
+            guessed: false
+          }
+        )
     }
     return tileLetter
   }
@@ -39,9 +46,13 @@ const App = () => {
     if (index < startTile || index > endTile) {
       return
     }
-    getRandomWord()
     let tileCopy = [...tile] // shallow copy of tile state
-    tileCopy[index] = e.target.innerHTML // change shallow copy array element
+    tileCopy[index] = {
+      letter: e.target.innerHTML, // change shallow copy array element
+      inWord: false,
+      inPlace: false,
+      guessed: false
+    }
     setIndex(index + 1) // increment index state
     setTile([...tileCopy]) // set the state to the updated shallow copy of tile state
   }
@@ -52,25 +63,78 @@ const App = () => {
       return
     }
     let tileCopy = [...tile]
-    tileCopy[index - 1] = ""
+    tileCopy[index - 1] = {
+      letter: "",
+      inWord: false,
+      inPlace: false,
+      guessed: false
+    }
     setIndex(index - 1)
     setTile([...tileCopy])
   }
 
+  const checkGuess = () => {
+    let tileCopy = [...tile]
+
+    let wordTable = {}
+
+    // populate wordTable
+    for (let c of word) {
+      if (!wordTable.hasOwnProperty(c)) {
+        wordTable[c] = 1
+      } else {
+        wordTable[c] += 1
+      }
+    }
+
+    let wordIndex = 0
+    // Check for letters that are in place
+    for (let i = startTile; i <= endTile; i++) {
+      const char = tileCopy[i].letter
+
+      if (char === word[wordIndex]) {
+        tileCopy[i].inPlace = true
+        wordTable[char] -= 1
+      }
+      tileCopy[i].guessed = true
+      wordIndex++
+    }
+
+    wordIndex = 0
+
+    // Check for letters that are in word
+    for (let i = startTile; i <= endTile; i++) {
+      const char = tileCopy[i].letter
+
+      if (tileCopy[i].inPlace === false && wordTable.hasOwnProperty(char) && wordTable[char] !== 0) {
+        tileCopy[i].inWord = true
+        wordTable[char] -= 1
+      }
+      wordIndex++
+    }
+  }
+
   // Submit and check if guess is correct
   const submit = () => {
-    if (startTile === 25) {
+    if (startTile === 25) { // if game reach maximum guess
       console.log("GAME IS ALREADY OVER")
       return
-    } else if (index - 1 === endTile) {
+    } else if (index - 1 === endTile) { // if 5 letters are input, guess, go to next row
       console.log(word)
       setStartTile(startTile + 5)
       setEndTile(endTile + 5)
     }
 
+    // get the inputted word / word guess
+    let wordGuess = ""
+    for (let i = startTile; i <= endTile; i++) {
+      wordGuess += tile[i].letter
+    }
+    checkGuess()
+
     // TODO: END GAME CONDITION, Word is guessed correctly
-    if (tile.slice(startTile, endTile + 1).join("") === word) {
-      console.log("PASS")
+    if (wordGuess === word) {
+      console.log("CORRECT!")
       newGame()
     }
   }
