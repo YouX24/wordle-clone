@@ -41,8 +41,10 @@ const App = () => {
     setEndTile(4)
   }
 
+  // TODO: Keyboard presses
+
   // Add letter to the board
-  const inputToBoard = (e) => {
+  const inputToBoard = (e) => { 
     if (index < startTile || index > endTile) {
       return
     }
@@ -116,7 +118,7 @@ const App = () => {
 
   // Submit and check if guess is correct
   const submit = () => {
-    if (startTile === 25) { // if game reach maximum guess
+    if (startTile > 25) { // if game reach maximum guess
       console.log("GAME IS ALREADY OVER")
       return
     } else if (index - 1 === endTile) { // if 5 letters are input, guess, go to next row
@@ -135,6 +137,8 @@ const App = () => {
     // TODO: END GAME CONDITION, Word is guessed correctly
     if (wordGuess === word) {
       console.log("CORRECT!")
+      // update win in local storage
+      // pop up modal to start new game
       newGame()
     }
   }
