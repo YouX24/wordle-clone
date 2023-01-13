@@ -1,10 +1,15 @@
-import React, { useState }from "react";
+import React, { useState, useEffect }from "react";
 import Header from "./components/Header";
 import Board from "./components/Board";
 import Keyboard from "./components/Keyboard";
 import allWords from "./data/allWords";
 
 const App = () => {
+
+  // TODO: Need fixing, resets state everytime a key is pressed
+  useEffect(() => {
+    document.addEventListener("keydown", keyboardPress)
+  }, [])
 
   const freshBoard = () => {
     const tileLetter = []
@@ -41,24 +46,6 @@ const App = () => {
     setEndTile(4)
   }
 
-  // TODO: Keyboard presses
-
-  // Add letter to the board
-  const inputToBoard = (e) => { 
-    if (index < startTile || index > endTile) {
-      return
-    }
-    let tileCopy = [...tile] // shallow copy of tile state
-    tileCopy[index] = {
-      letter: e.target.innerHTML, // change shallow copy array element
-      inWord: false,
-      inPlace: false,
-      guessed: false
-    }
-    setIndex(index + 1) // increment index state
-    setTile([...tileCopy]) // set the state to the updated shallow copy of tile state
-  }
-
   // Remove latest letter from the board
   const backspace = () => {
     if (index === startTile) {
@@ -73,6 +60,39 @@ const App = () => {
     }
     setIndex(index - 1)
     setTile([...tileCopy])
+  }
+
+  const keyRegex = new RegExp("^[A-Z]$")
+
+  const keyboardPress = (e) => {
+    if (keyRegex.test(e.key.toUpperCase())) {
+      inputToBoard(e.key.toUpperCase())
+    }
+  }
+
+  // TODO: keyboard press resets index state
+  // Add letter to the board
+  const inputToBoard = (e) => {
+    let inputLetter = ""
+    if (e.hasOwnProperty("target")) {
+      console.log("it is a click event")
+      inputLetter = e.target.innerHTML
+    } else {
+      console.log("it is a key event")
+      inputLetter = e
+    }
+    if (index < startTile || index > endTile) {
+      return
+    }
+    let tileCopy = [...tile] // shallow copy of tile state
+    tileCopy[index] = {
+      letter: inputLetter, // change shallow copy array element
+      inWord: false,
+      inPlace: false,
+      guessed: false
+    }
+    setIndex(index + 1) // increment index state
+    setTile([...tileCopy]) // set the state to the updated shallow copy of tile state
   }
 
   const checkGuess = () => {

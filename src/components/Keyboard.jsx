@@ -10,8 +10,6 @@ const Keyboard = (props) => {
     const rowOneBtns = rowOne.map(b => <Button letter={b} inputToBoard={props.inputToBoard}/>)
     const rowTwoBtns = rowTwo.map(b => <Button letter={b} inputToBoard={props.inputToBoard}/>)
     const rowThreeBtns = rowThree.map(b => <Button letter={b} inputToBoard={props.inputToBoard}/>)
-
-
     
     return (
         <div>
