@@ -9,6 +9,8 @@ const Tile = (props) => {
         color = "bg-[#b59f3b]"
     } else if (props.guessed === true) {
         color = "bg-[#3a3a3c]"
+    } else {
+        color = "bg-transparent"
     }
 
     return (

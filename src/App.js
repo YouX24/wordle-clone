@@ -1,4 +1,4 @@
-import React, { useState, useEffect }from "react";
+import React, { useState } from "react";
 import Header from "./components/Header";
 import Board from "./components/Board";
 import Keyboard from "./components/Keyboard";
@@ -7,9 +7,9 @@ import allWords from "./data/allWords";
 const App = () => {
 
   // TODO: Need fixing, resets state everytime a key is pressed
-  useEffect(() => {
-    document.addEventListener("keydown", keyboardPress)
-  }, [])
+  // useEffect(() => {
+  //   document.addEventListener("keydown", keyboardPress)
+  // }, [])
 
   const freshBoard = () => {
     const tileLetter = []
@@ -46,6 +46,7 @@ const App = () => {
     setEndTile(4)
   }
 
+
   // Remove latest letter from the board
   const backspace = () => {
     if (index === startTile) {
@@ -62,26 +63,23 @@ const App = () => {
     setTile([...tileCopy])
   }
 
-  const keyRegex = new RegExp("^[A-Z]$")
+  // NOT DONE: use for physical keybaord input 
+  // const keyRegex = new RegExp("^[A-Z]$")
+  // const keyboardPress = (e) => {
+  //   if (keyRegex.test(e.key.toUpperCase())) {
+  //     inputToBoard(e.key.toUpperCase())
+  //   }
+  // }
 
-  const keyboardPress = (e) => {
-    if (keyRegex.test(e.key.toUpperCase())) {
-      inputToBoard(e.key.toUpperCase())
-    }
-  }
 
-  // TODO: keyboard press resets index state
+  // TODO: Problem - keyboard press resets index state
   // Add letter to the board
   const inputToBoard = (e) => {
     let inputLetter = ""
     if (e.hasOwnProperty("target")) {
-      console.log("it is a click event")
       inputLetter = e.target.innerHTML
-    } else {
-      console.log("it is a key event")
-      inputLetter = e
     }
-    if (index < startTile || index > endTile) {
+    if ((index < startTile || index > endTile) || startTile === 30) {
       return
     }
     let tileCopy = [...tile] // shallow copy of tile state
@@ -95,12 +93,12 @@ const App = () => {
     setTile([...tileCopy]) // set the state to the updated shallow copy of tile state
   }
 
+
   const checkGuess = () => {
     let tileCopy = [...tile]
-
     let wordTable = {}
 
-    // populate wordTable
+    // populate wordTable, store character and it's frequency
     for (let c of word) {
       if (!wordTable.hasOwnProperty(c)) {
         wordTable[c] = 1
@@ -124,7 +122,7 @@ const App = () => {
 
     wordIndex = 0
 
-    // Check for letters that are in word
+    // Check for letters that are in the actual word
     for (let i = startTile; i <= endTile; i++) {
       const char = tileCopy[i].letter
 
@@ -134,33 +132,79 @@ const App = () => {
       }
       wordIndex++
     }
+
+    setTile([...tileCopy])
   }
 
-  // Submit and check if guess is correct
+
+  // Submit and check if guess is correct (when ENTER button is clicked)
   const submit = () => {
     if (startTile > 25) { // if game reach maximum guess
-      console.log("GAME IS ALREADY OVER")
+      console.log("GAME IS ALREADY OVER, can't input more letters")
       return
     } else if (index - 1 === endTile) { // if 5 letters are input, guess, go to next row
+      let wordGuess = "" // get the inputted word / word guess
+      for (let i = startTile; i <= endTile; i++) {
+        wordGuess += tile[i].letter
+      }
+      checkGuess()
+
+      if (wordGuess === word) {
+        updateLocalStorage("win")
+        // TODO: pop up modal to start new game
+        newGame()
+      } else {
+        setStartTile(startTile + 5)
+        setEndTile(endTile + 5)
+      }
+
+      if (index === 30) {
+        // TODO: modal
+        updateLocalStorage("lose")
+        console.log("game ended")
+      }
       console.log(word)
-      setStartTile(startTile + 5)
-      setEndTile(endTile + 5)
     }
+  }
 
-    // get the inputted word / word guess
-    let wordGuess = ""
-    for (let i = startTile; i <= endTile; i++) {
-      wordGuess += tile[i].letter
-    }
-    checkGuess()
 
-    // TODO: END GAME CONDITION, Word is guessed correctly
-    if (wordGuess === word) {
-      console.log("CORRECT!")
-      // update win in local storage
-      // pop up modal to start new game
-      newGame()
+  const updateLocalStorage = (result) => {
+    let gameStats = {
+      gamesPlayed: 1,
+      gamesWon: 0,
+      gamesLost: 0,
+      winPercentage: 0,
+      currentWinStreak: 0,
+      maxStreak: 0,
     }
+    if (localStorage.getItem("gameStats") === null && result === "win") {
+      gameStats.gamesWon = 1
+      gameStats.winPercentage = 100
+      gameStats.currentWinStreak = 1
+      gameStats.maxStreak = 1
+      localStorage.setItem("gameStats", JSON.stringify(gameStats))
+      console.log("updated first win")
+    } else if (localStorage.getItem("gameStats") === null && result === "lose") {
+      gameStats.gamesLost = 1
+      localStorage.setItem("gameStats", JSON.stringify(gameStats))
+      console.log("updated first lost")
+    } else if (result === "win") {
+      // TODO: update current win game stats
+      updateWin()
+    } else if (result === "lose") {
+      // TODO: update current lose game stats
+      // updateLose()
+    }
+  }
+
+  const updateWin = () => {
+    let currentGameStats = localStorage.getItem("gameStats")
+    currentGameStats.gamesPlayed = currentGameStats.gamesPlayed += 1
+    // TODO: Calculate win percentage
+  }
+
+  const updateLose = () => {
+    // TODO
   }
 
   return (
