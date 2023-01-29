@@ -168,6 +168,7 @@ const App = () => {
   }
 
 
+  // update game stats according to WIN or LOSE
   const updateLocalStorage = (result) => {
     let gameStats = {
       gamesPlayed: 1,
@@ -189,22 +190,76 @@ const App = () => {
       localStorage.setItem("gameStats", JSON.stringify(gameStats))
       console.log("updated first lost")
     } else if (result === "win") {
-      // TODO: update current win game stats
       updateWin()
     } else if (result === "lose") {
-      // TODO: update current lose game stats
-      // updateLose()
+      updateLose()
     }
   }
 
+
+  // update game stats when game is WON
   const updateWin = () => {
-    let currentGameStats = localStorage.getItem("gameStats")
-    currentGameStats.gamesPlayed = currentGameStats.gamesPlayed += 1
-    // TODO: Calculate win percentage
+    const currentGameStats = JSON.parse(localStorage.getItem("gameStats"))
+    const gamesPlayedUpdated = currentGameStats.gamesPlayed += 1
+    const gamesWonUpdated = currentGameStats.gamesWon += 1
+    const winPercentageUpdated = calculateWinPercentage(gamesPlayedUpdated, gamesWonUpdated)
+    const winStreakUpdated = calculateWinStreak(currentGameStats)
+    const maxStreakUpdated = calculateMaxStreak(currentGameStats, winStreakUpdated)
+    const gameStats = updatedGameStats(gamesPlayedUpdated, gamesWonUpdated, currentGameStats.gamesLost, winPercentageUpdated, winStreakUpdated, maxStreakUpdated)
+    localStorage.setItem("gameStats", JSON.stringify(gameStats))
   }
 
+
+  // update game stats when game is LOST
   const updateLose = () => {
-    // TODO
+    const currentGameStats = JSON.parse(localStorage.getItem("gameStats"))
+    const gamesPlayedUpdated = currentGameStats.gamesPlayed += 1
+    const gamesLostUpdated = currentGameStats.gamesLost += 1
+    const winPercentageUpdated = calculateWinPercentage(gamesPlayedUpdated, currentGameStats.gamesWon)
+    const winStreakUpdated = 0
+    const maxStreakUpdated = calculateMaxStreak(currentGameStats, winStreakUpdated)
+    const gameStats = updatedGameStats(gamesPlayedUpdated, currentGameStats.gamesWon, gamesLostUpdated, winPercentageUpdated, winStreakUpdated, maxStreakUpdated)
+    localStorage.setItem("gameStats", JSON.stringify(gameStats))
+  }
+
+  // calculate win percentage
+  const calculateWinPercentage = (gamesPlayed, gamesWon) => {
+    const decimalPercentage = gamesWon / gamesPlayed
+    const result = decimalPercentage.toFixed(2) * 100
+    return result
+  }
+
+
+  // calculate win streak
+  const calculateWinStreak = (currentGameStats) => {
+    if (currentGameStats.currentWinStreak === 0) {
+      return 1
+    }
+    return currentGameStats.currentWinStreak + 1
+  }
+
+
+  // calculate maximum win streak 
+  const calculateMaxStreak = (currentGameStats, updatedStreak) => {
+    if (updatedStreak > currentGameStats.maxStreak) {
+      return updatedStreak
+    }
+    return currentGameStats.maxStreak
+  }
+
+
+  // returns a new object of the updated game stats
+  const updatedGameStats = (gamesPlayedUpdated, gamesWonUpdated, gamesLostUpdated, winPercentageUpdated, winStreakUpdated, maxStreakUpdated) => {
+    return (
+      {
+        gamesPlayed: gamesPlayedUpdated,
+        gamesWon: gamesWonUpdated,
+        gamesLost: gamesLostUpdated,
+        winPercentage: winPercentageUpdated,
+        currentWinStreak: winStreakUpdated,
+        maxStreak: maxStreakUpdated,
+      }
+    )
   }
 
   return (
