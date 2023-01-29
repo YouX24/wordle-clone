@@ -3,6 +3,7 @@ import Header from "./components/Header";
 import Board from "./components/Board";
 import Keyboard from "./components/Keyboard";
 import allWords from "./data/allWords";
+import Modal from "./components/Modal";
 
 const App = () => {
 
@@ -36,6 +37,7 @@ const App = () => {
   const [index, setIndex] = useState(0)
   const [startTile, setStartTile] = useState(0)
   const [endTile, setEndTile] = useState(4)
+  const [modal, setModal] = useState(false)
 
   // Resets the board and starts a new game
   const newGame = () => {
@@ -151,17 +153,15 @@ const App = () => {
 
       if (wordGuess === word) {
         updateLocalStorage("win")
-        // TODO: pop up modal to start new game
-        newGame()
+        openModal()
       } else {
         setStartTile(startTile + 5)
         setEndTile(endTile + 5)
       }
 
       if (index === 30) {
-        // TODO: modal
         updateLocalStorage("lose")
-        console.log("game ended")
+        openModal()
       }
       console.log(word)
     }
@@ -262,8 +262,22 @@ const App = () => {
     )
   }
 
+
+  // open the pop up modal
+  const openModal = () => {
+    setModal(true)
+  }
+
+  // close the pop up modal
+  const closeModal = () => {
+    setModal(false)
+  }
+
+  // TODO: work on modal
+
   return (
     <div className="h-screen bg-[#121213] font-poppins">
+      {modal && <Modal closeModal={closeModal}></Modal>}
       <Header></Header>
       <div className="flex flex-col h-5/6 justify-center p-1">
         <Board tile={tile}></Board>
