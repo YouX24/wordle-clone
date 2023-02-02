@@ -46,6 +46,7 @@ const App = () => {
     setIndex(0)
     setStartTile(0)
     setEndTile(4)
+    closeModal()
   }
 
 
@@ -226,7 +227,7 @@ const App = () => {
   const calculateWinPercentage = (gamesPlayed, gamesWon) => {
     const decimalPercentage = gamesWon / gamesPlayed
     const result = decimalPercentage.toFixed(2) * 100
-    return result
+    return Math.floor(result)
   }
 
 
@@ -277,7 +278,8 @@ const App = () => {
 
   return (
     <div className="h-screen bg-[#121213] font-poppins">
-      {modal && <Modal closeModal={closeModal}></Modal>}
+      {/* <button onClick={openModal} className="text-white">OPEN</button> */}
+      {modal && <Modal openModal={openModal} closeModal={closeModal} newGame={newGame}></Modal>}
       <Header></Header>
       <div className="flex flex-col h-5/6 justify-center p-1">
         <Board tile={tile}></Board>
