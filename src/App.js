@@ -7,11 +7,6 @@ import Modal from "./components/Modal";
 
 const App = () => {
 
-  // TODO: Need fixing, resets state everytime a key is pressed
-  // useEffect(() => {
-  //   document.addEventListener("keydown", keyboardPress)
-  // }, [])
-
   const freshBoard = () => {
     const tileLetter = []
     for (let i = 0; i < 30; i++) {
@@ -27,6 +22,21 @@ const App = () => {
     return tileLetter
   }
 
+  const freshKeyboard = () => {
+    const keyboardLetters = ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "A", "S", "D", "F", "G", "H", "J", "K", "L", "Z", "X", "C", "V", "B", "N", "M"]
+    const keyboardState = []
+
+    for (let c of keyboardLetters) {
+      keyboardState.push(
+        {
+          letter: c,
+        }
+      )
+    }
+
+    return keyboardState
+  }
+
   const getRandomWord = () => {
     const randomIndex = Math.floor(Math.random() * allWords.length)
     return allWords[randomIndex].toUpperCase()
@@ -34,25 +44,31 @@ const App = () => {
 
   const [word, setWord] = useState(getRandomWord())
   const [tile, setTile] = useState(freshBoard())
+  const [keyboardColor, setKeyboardColor] = useState(freshKeyboard())
   const [index, setIndex] = useState(0)
   const [startTile, setStartTile] = useState(0)
   const [endTile, setEndTile] = useState(4)
   const [modal, setModal] = useState(false)
+  const [showNewGame, setShowNewGame] = useState(false)
+  const [inputDisabled, setInputDisabled] = useState(false)
 
   // Resets the board and starts a new game
   const newGame = () => {
     setWord(getRandomWord())
     setTile(freshBoard())
+    setKeyboardColor(freshKeyboard())
     setIndex(0)
     setStartTile(0)
     setEndTile(4)
     closeModal()
+    newGameDisabled()
+    enableInput()
   }
 
 
   // Remove latest letter from the board
   const backspace = () => {
-    if (index === startTile) {
+    if (inputDisabled || index === startTile) {
       return
     }
     let tileCopy = [...tile]
@@ -66,16 +82,7 @@ const App = () => {
     setTile([...tileCopy])
   }
 
-  // NOT DONE: use for physical keybaord input 
-  // const keyRegex = new RegExp("^[A-Z]$")
-  // const keyboardPress = (e) => {
-  //   if (keyRegex.test(e.key.toUpperCase())) {
-  //     inputToBoard(e.key.toUpperCase())
-  //   }
-  // }
 
-
-  // TODO: Problem - keyboard press resets index state
   // Add letter to the board
   const inputToBoard = (e) => {
     let inputLetter = ""
@@ -97,6 +104,39 @@ const App = () => {
   }
 
 
+  // add additional property into keyboardColor state to change keyboard color
+  const colorTheKeyboard = (tileCopy, wordTable) => {
+    let keyboardColorCopy = [...keyboardColor]
+    let wordIndex = 0
+    for (let i = startTile; i <= endTile; i++) {
+      console.log(tileCopy[i].letter, word[wordIndex])
+      const char = tileCopy[i].letter
+      const keyboardIndex = searchKeyboardBtn(char, keyboardColorCopy)
+      if (char === word[wordIndex]) {
+        keyboardColorCopy[keyboardIndex].inPlace = true
+        console.log(keyboardColorCopy)
+      } else if (wordTable.hasOwnProperty(char)) {
+        keyboardColorCopy[keyboardIndex].inWord = true
+      } else if (!wordTable.hasOwnProperty(char)) {
+        keyboardColorCopy[keyboardIndex].notInWord = true
+      }
+      wordIndex++
+    }
+    setKeyboardColor(keyboardColorCopy)
+  }
+
+
+  // helper function to get the index of l = letter in keyboardColorCopy object
+  const searchKeyboardBtn = (L, keyboardColorCopy) => {
+    let i = 0
+    while (keyboardColorCopy[i].letter !== L) {
+      i++
+    }
+    return i
+  }
+
+
+  // checks the submitted guess
   const checkGuess = () => {
     let tileCopy = [...tile]
     let wordTable = {}
@@ -109,6 +149,8 @@ const App = () => {
         wordTable[c] += 1
       }
     }
+
+    colorTheKeyboard(tileCopy, wordTable)
 
     let wordIndex = 0
     // Check for letters that are in place
@@ -142,8 +184,7 @@ const App = () => {
 
   // Submit and check if guess is correct (when ENTER button is clicked)
   const submit = () => {
-    if (startTile > 25) { // if game reach maximum guess
-      console.log("GAME IS ALREADY OVER, can't input more letters")
+    if (inputDisabled || startTile > 25) { // if game reach maximum guess
       return
     } else if (index - 1 === endTile) { // if 5 letters are input, guess, go to next row
       let wordGuess = "" // get the inputted word / word guess
@@ -154,7 +195,9 @@ const App = () => {
 
       if (wordGuess === word) {
         updateLocalStorage("win")
+        newGameEnabled()
         openModal()
+        disableInput()
       } else {
         setStartTile(startTile + 5)
         setEndTile(endTile + 5)
@@ -162,6 +205,7 @@ const App = () => {
 
       if (index === 30) {
         updateLocalStorage("lose")
+        newGameEnabled()
         openModal()
       }
       console.log(word)
@@ -269,21 +313,45 @@ const App = () => {
     setModal(true)
   }
 
+
   // close the pop up modal
   const closeModal = () => {
     setModal(false)
   }
 
-  // TODO: work on modal
+
+  // enables new game button
+  const newGameEnabled = () => {
+    setShowNewGame(true)
+  }
+
+
+  // disables new game buttom
+  const newGameDisabled = () => {
+    setShowNewGame(false)
+  }
+
+
+    // disable user input to board
+    const disableInput = () => {
+      setInputDisabled(true)
+    }
+  
+  
+    // enable user input to board
+    const enableInput = () => {
+      setInputDisabled(false)
+    }
+
+  // TODO: work on keyboard color
 
   return (
     <div className="h-screen bg-[#121213] font-poppins">
-      {/* <button onClick={openModal} className="text-white">OPEN</button> */}
-      {modal && <Modal openModal={openModal} closeModal={closeModal} newGame={newGame}></Modal>}
-      <Header></Header>
+      {modal && <Modal openModal={openModal} showNewGame={showNewGame} closeModal={closeModal} newGame={newGame}></Modal>}
+      <Header openModal={openModal}></Header>
       <div className="flex flex-col h-5/6 justify-center p-1">
         <Board tile={tile}></Board>
-        <Keyboard inputToBoard={inputToBoard} backspace={backspace} submit={submit}></Keyboard>
+        <Keyboard keyboardColor={keyboardColor} inputToBoard={inputToBoard} backspace={backspace} submit={submit}></Keyboard>
       </div>
     </div>
   );

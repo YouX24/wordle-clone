@@ -3,13 +3,13 @@ import Button from "./Button";
 import Largebtn from "./Largebtn";
 
 const Keyboard = (props) => {
-    const rowOne = ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"]
-    const rowTwo = ["A", "S", "D", "F", "G", "H", "J", "K", "L"]
-    const rowThree = ["Z", "X", "C", "V", "B", "N", "M"]
+    const rowOne = props.keyboardColor.slice(0,10)
+    const rowTwo = props.keyboardColor.slice(10,19)
+    const rowThree = props.keyboardColor.slice(19)
 
-    const rowOneBtns = rowOne.map(b => <Button letter={b} inputToBoard={props.inputToBoard}/>)
-    const rowTwoBtns = rowTwo.map(b => <Button letter={b} inputToBoard={props.inputToBoard}/>)
-    const rowThreeBtns = rowThree.map(b => <Button letter={b} inputToBoard={props.inputToBoard}/>)
+    const rowOneBtns = rowOne.map(l => <Button  letter={l.letter} inputToBoard={props.inputToBoard} keyboardAttr={l}/>)
+    const rowTwoBtns = rowTwo.map(l => <Button letter={l.letter} inputToBoard={props.inputToBoard} keyboardAttr={l}/>)
+    const rowThreeBtns = rowThree.map(l => <Button letter={l.letter} inputToBoard={props.inputToBoard} keyboardAttr={l}/>)
     
     return (
         <div>

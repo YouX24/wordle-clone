@@ -10,7 +10,7 @@ const Modal = (props) => {
 
     return (
         <div className="flex justify-center items-center absolute w-screen h-screen bg-black/[.7]">
-            <div className="relative flex items-center justify-center flex-col w-1/2 h-64 bg-[#121213] text-white p-8">
+            <div className="relative flex items-center justify-center flex-col w-74 h-64 bg-[#121213] text-white p-8">
                 <i className="absolute top-1 right-1"><MdClose className="text-red-600 text-3xl hover:cursor-pointer" onClick={props.closeModal}/></i>
                 <h2>STATISTICS</h2>
                 <div className="flex justify-center">
@@ -31,7 +31,7 @@ const Modal = (props) => {
                         <p className={statDescStyle}>Max Streak</p>
                     </div>
                 </div>
-                <button className="bg-green-500 p-2 rounded-md" onClick={props.newGame}>New Game</button>
+                {props.showNewGame && <button className="bg-green-500 p-2 rounded-md" onClick={props.newGame}>New Game</button>}
             </div>
         </div>
     )
