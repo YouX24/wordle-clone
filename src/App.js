@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Header from "./components/Header";
 import Board from "./components/Board";
 import Keyboard from "./components/Keyboard";
@@ -7,6 +7,7 @@ import Modal from "./components/Modal";
 
 const App = () => {
 
+  // resets the board
   const freshBoard = () => {
     const tileLetter = []
     for (let i = 0; i < 30; i++) {
@@ -22,6 +23,8 @@ const App = () => {
     return tileLetter
   }
 
+
+  // sets the keyboard letters and resets the color of the keyboard
   const freshKeyboard = () => {
     const keyboardLetters = ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "A", "S", "D", "F", "G", "H", "J", "K", "L", "Z", "X", "C", "V", "B", "N", "M"]
     const keyboardState = []
@@ -37,10 +40,13 @@ const App = () => {
     return keyboardState
   }
 
+
+  // returns a random word from allWords state containing an array of words
   const getRandomWord = () => {
     const randomIndex = Math.floor(Math.random() * allWords.length)
     return allWords[randomIndex].toUpperCase()
   }
+
 
   const [word, setWord] = useState(getRandomWord())
   const [tile, setTile] = useState(freshBoard())
@@ -51,6 +57,7 @@ const App = () => {
   const [modal, setModal] = useState(false)
   const [showNewGame, setShowNewGame] = useState(false)
   const [inputDisabled, setInputDisabled] = useState(false)
+
 
   // Resets the board and starts a new game
   const newGame = () => {
@@ -63,23 +70,6 @@ const App = () => {
     closeModal()
     newGameDisabled()
     enableInput()
-  }
-
-
-  // Remove latest letter from the board
-  const backspace = () => {
-    if (inputDisabled || index === startTile) {
-      return
-    }
-    let tileCopy = [...tile]
-    tileCopy[index - 1] = {
-      letter: "",
-      inWord: false,
-      inPlace: false,
-      guessed: false
-    }
-    setIndex(index - 1)
-    setTile([...tileCopy])
   }
 
 
@@ -105,7 +95,7 @@ const App = () => {
 
 
   // add additional property into keyboardColor state to change keyboard color
-  const colorTheKeyboard = (tileCopy, wordTable) => {
+  const colorTheKeyboard = useCallback((tileCopy, wordTable) => {
     let keyboardColorCopy = [...keyboardColor]
     let wordIndex = 0
     for (let i = startTile; i <= endTile; i++) {
@@ -123,7 +113,7 @@ const App = () => {
       wordIndex++
     }
     setKeyboardColor(keyboardColorCopy)
-  }
+  }, [endTile, keyboardColor, startTile, word])
 
 
   // helper function to get the index of l = letter in keyboardColorCopy object
@@ -135,9 +125,34 @@ const App = () => {
     return i
   }
 
+    // update game stats when game is WON
+    const updateWin = useCallback(() => {
+      const currentGameStats = JSON.parse(localStorage.getItem("gameStats"))
+      const gamesPlayedUpdated = currentGameStats.gamesPlayed += 1
+      const gamesWonUpdated = currentGameStats.gamesWon += 1
+      const winPercentageUpdated = calculateWinPercentage(gamesPlayedUpdated, gamesWonUpdated)
+      const winStreakUpdated = calculateWinStreak(currentGameStats)
+      const maxStreakUpdated = calculateMaxStreak(currentGameStats, winStreakUpdated)
+      const gameStats = updatedGameStats(gamesPlayedUpdated, gamesWonUpdated, currentGameStats.gamesLost, winPercentageUpdated, winStreakUpdated, maxStreakUpdated)
+      localStorage.setItem("gameStats", JSON.stringify(gameStats))
+    }, [])
+  
+  
+    // update game stats when game is LOST
+    const updateLose = useCallback(() => {
+      const currentGameStats = JSON.parse(localStorage.getItem("gameStats"))
+      const gamesPlayedUpdated = currentGameStats.gamesPlayed += 1
+      const gamesLostUpdated = currentGameStats.gamesLost += 1
+      const winPercentageUpdated = calculateWinPercentage(gamesPlayedUpdated, currentGameStats.gamesWon)
+      const winStreakUpdated = 0
+      const maxStreakUpdated = calculateMaxStreak(currentGameStats, winStreakUpdated)
+      const gameStats = updatedGameStats(gamesPlayedUpdated, currentGameStats.gamesWon, gamesLostUpdated, winPercentageUpdated, winStreakUpdated, maxStreakUpdated)
+      localStorage.setItem("gameStats", JSON.stringify(gameStats))
+    }, [])
+
 
   // checks the submitted guess
-  const checkGuess = () => {
+  const checkGuess = useCallback(() => {
     let tileCopy = [...tile]
     let wordTable = {}
 
@@ -179,11 +194,40 @@ const App = () => {
     }
 
     setTile([...tileCopy])
-  }
+  }, [colorTheKeyboard, endTile, startTile, tile, word])
+
+
+    // update game stats according to WIN or LOSE
+    const updateLocalStorage = useCallback((result) => {
+      let gameStats = {
+        gamesPlayed: 1,
+        gamesWon: 0,
+        gamesLost: 0,
+        winPercentage: 0,
+        currentWinStreak: 0,
+        maxStreak: 0,
+      }
+      if (localStorage.getItem("gameStats") === null && result === "win") {
+        gameStats.gamesWon = 1
+        gameStats.winPercentage = 100
+        gameStats.currentWinStreak = 1
+        gameStats.maxStreak = 1
+        localStorage.setItem("gameStats", JSON.stringify(gameStats))
+        console.log("updated first win")
+      } else if (localStorage.getItem("gameStats") === null && result === "lose") {
+        gameStats.gamesLost = 1
+        localStorage.setItem("gameStats", JSON.stringify(gameStats))
+        console.log("updated first lost")
+      } else if (result === "win") {
+        updateWin()
+      } else if (result === "lose") {
+        updateLose()
+      }
+    }, [updateLose, updateWin])
 
 
   // Submit and check if guess is correct (when ENTER button is clicked)
-  const submit = () => {
+  const submit = useCallback(() => {
     if (inputDisabled || startTile > 25) { // if game reach maximum guess
       return
     } else if (index - 1 === endTile) { // if 5 letters are input, guess, go to next row
@@ -210,62 +254,25 @@ const App = () => {
       }
       console.log(word)
     }
-  }
+  }, [checkGuess, endTile, index, inputDisabled, startTile, tile, updateLocalStorage, word])
 
 
-  // update game stats according to WIN or LOSE
-  const updateLocalStorage = (result) => {
-    let gameStats = {
-      gamesPlayed: 1,
-      gamesWon: 0,
-      gamesLost: 0,
-      winPercentage: 0,
-      currentWinStreak: 0,
-      maxStreak: 0,
-    }
-    if (localStorage.getItem("gameStats") === null && result === "win") {
-      gameStats.gamesWon = 1
-      gameStats.winPercentage = 100
-      gameStats.currentWinStreak = 1
-      gameStats.maxStreak = 1
-      localStorage.setItem("gameStats", JSON.stringify(gameStats))
-      console.log("updated first win")
-    } else if (localStorage.getItem("gameStats") === null && result === "lose") {
-      gameStats.gamesLost = 1
-      localStorage.setItem("gameStats", JSON.stringify(gameStats))
-      console.log("updated first lost")
-    } else if (result === "win") {
-      updateWin()
-    } else if (result === "lose") {
-      updateLose()
-    }
-  }
+    // Remove latest letter from the board
+    const backspace = useCallback(() => {
+      if (inputDisabled || index === startTile) {
+        return
+      }
+      let tileCopy = [...tile]
+      tileCopy[index - 1] = {
+        letter: "",
+        inWord: false,
+        inPlace: false,
+        guessed: false
+      }
+      setIndex(index - 1)
+      setTile([...tileCopy])
+    }, [index, inputDisabled, startTile, tile])
 
-
-  // update game stats when game is WON
-  const updateWin = () => {
-    const currentGameStats = JSON.parse(localStorage.getItem("gameStats"))
-    const gamesPlayedUpdated = currentGameStats.gamesPlayed += 1
-    const gamesWonUpdated = currentGameStats.gamesWon += 1
-    const winPercentageUpdated = calculateWinPercentage(gamesPlayedUpdated, gamesWonUpdated)
-    const winStreakUpdated = calculateWinStreak(currentGameStats)
-    const maxStreakUpdated = calculateMaxStreak(currentGameStats, winStreakUpdated)
-    const gameStats = updatedGameStats(gamesPlayedUpdated, gamesWonUpdated, currentGameStats.gamesLost, winPercentageUpdated, winStreakUpdated, maxStreakUpdated)
-    localStorage.setItem("gameStats", JSON.stringify(gameStats))
-  }
-
-
-  // update game stats when game is LOST
-  const updateLose = () => {
-    const currentGameStats = JSON.parse(localStorage.getItem("gameStats"))
-    const gamesPlayedUpdated = currentGameStats.gamesPlayed += 1
-    const gamesLostUpdated = currentGameStats.gamesLost += 1
-    const winPercentageUpdated = calculateWinPercentage(gamesPlayedUpdated, currentGameStats.gamesWon)
-    const winStreakUpdated = 0
-    const maxStreakUpdated = calculateMaxStreak(currentGameStats, winStreakUpdated)
-    const gameStats = updatedGameStats(gamesPlayedUpdated, currentGameStats.gamesWon, gamesLostUpdated, winPercentageUpdated, winStreakUpdated, maxStreakUpdated)
-    localStorage.setItem("gameStats", JSON.stringify(gameStats))
-  }
 
   // calculate win percentage
   const calculateWinPercentage = (gamesPlayed, gamesWon) => {
@@ -343,7 +350,35 @@ const App = () => {
       setInputDisabled(false)
     }
 
-  // TODO: work on keyboard color
+
+  // get physical keyboard input
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const regex = "^[A-Za-z]$"
+      if (e.key === "Enter") {
+        submit()
+      } else if (e.key === "Backspace") {
+        backspace()
+      }
+      if ((index < startTile || index > endTile) || startTile === 30 || !e.key.match(regex)) {
+        return
+      }
+      let tileCopy = [...tile] // shallow copy of tile state
+      tileCopy[index] = {
+        letter: e.key.toUpperCase(), // change shallow copy array element
+        inWord: false,
+        inPlace: false,
+        guessed: false
+      }
+      setIndex(index + 1) // increment index state
+      setTile([...tileCopy])
+      
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [endTile, startTile, index, tile, submit, backspace]);
 
   return (
     <div className="h-screen bg-[#121213] font-poppins">
