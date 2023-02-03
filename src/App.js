@@ -4,6 +4,8 @@ import Board from "./components/Board";
 import Keyboard from "./components/Keyboard";
 import allWords from "./data/allWords";
 import Modal from "./components/Modal";
+import Answer from "./components/Answer";
+import Error from "./components/Error";
 
 const App = () => {
 
@@ -48,6 +50,7 @@ const App = () => {
   }
 
 
+  // States
   const [word, setWord] = useState(getRandomWord())
   const [tile, setTile] = useState(freshBoard())
   const [keyboardColor, setKeyboardColor] = useState(freshKeyboard())
@@ -57,6 +60,8 @@ const App = () => {
   const [modal, setModal] = useState(false)
   const [showNewGame, setShowNewGame] = useState(false)
   const [inputDisabled, setInputDisabled] = useState(false)
+  const [showAnswer, setShowAnswer] = useState(false)
+  const [errorGuess, setErrorGuess] = useState(false)
 
 
   // Resets the board and starts a new game
@@ -70,6 +75,7 @@ const App = () => {
     closeModal()
     newGameDisabled()
     enableInput()
+    setShowAnswer(false)
   }
 
 
@@ -99,12 +105,10 @@ const App = () => {
     let keyboardColorCopy = [...keyboardColor]
     let wordIndex = 0
     for (let i = startTile; i <= endTile; i++) {
-      console.log(tileCopy[i].letter, word[wordIndex])
       const char = tileCopy[i].letter
       const keyboardIndex = searchKeyboardBtn(char, keyboardColorCopy)
       if (char === word[wordIndex]) {
         keyboardColorCopy[keyboardIndex].inPlace = true
-        console.log(keyboardColorCopy)
       } else if (wordTable.hasOwnProperty(char)) {
         keyboardColorCopy[keyboardIndex].inWord = true
       } else if (!wordTable.hasOwnProperty(char)) {
@@ -124,6 +128,7 @@ const App = () => {
     }
     return i
   }
+
 
     // update game stats when game is WON
     const updateWin = useCallback(() => {
@@ -213,17 +218,34 @@ const App = () => {
         gameStats.currentWinStreak = 1
         gameStats.maxStreak = 1
         localStorage.setItem("gameStats", JSON.stringify(gameStats))
-        console.log("updated first win")
       } else if (localStorage.getItem("gameStats") === null && result === "lose") {
         gameStats.gamesLost = 1
         localStorage.setItem("gameStats", JSON.stringify(gameStats))
-        console.log("updated first lost")
       } else if (result === "win") {
         updateWin()
       } else if (result === "lose") {
         updateLose()
       }
     }, [updateLose, updateWin])
+
+
+    // check if guess word exists in the allWords array (all 5 letter words)
+    const verifyWord = (w) => {
+      let wordSet = new Set(allWords)
+      if (wordSet.has(w.toLowerCase())) {
+        return true
+      }
+      return false
+    }
+
+
+    // set errorGuess state to show and remove error message
+    const errorMessagePopUp = () => {
+      setErrorGuess(true)
+      setTimeout(() => {
+        setErrorGuess(false)
+      }, 2000)
+    }
 
 
   // Submit and check if guess is correct (when ENTER button is clicked)
@@ -235,13 +257,21 @@ const App = () => {
       for (let i = startTile; i <= endTile; i++) {
         wordGuess += tile[i].letter
       }
+
+      if (!verifyWord(wordGuess)) {
+        errorMessagePopUp()
+        return
+      }
       checkGuess()
 
       if (wordGuess === word) {
         updateLocalStorage("win")
         newGameEnabled()
-        openModal()
+        setShowAnswer(true)
         disableInput()
+        setTimeout(() => {
+          openModal()
+        }, 1500)
       } else {
         setStartTile(startTile + 5)
         setEndTile(endTile + 5)
@@ -250,9 +280,11 @@ const App = () => {
       if (index === 30) {
         updateLocalStorage("lose")
         newGameEnabled()
-        openModal()
+        setShowAnswer(true)
+        setTimeout(() => {
+          openModal()
+        }, 1500)
       }
-      console.log(word)
     }
   }, [checkGuess, endTile, index, inputDisabled, startTile, tile, updateLocalStorage, word])
 
@@ -382,6 +414,8 @@ const App = () => {
 
   return (
     <div className="h-screen bg-[#121213] font-poppins">
+      {errorGuess && <Error/>}
+      {showAnswer && <Answer word={word}/>}
       {modal && <Modal openModal={openModal} showNewGame={showNewGame} closeModal={closeModal} newGame={newGame}></Modal>}
       <Header openModal={openModal}></Header>
       <div className="flex flex-col items-center justify-center h-5/6 p-1">

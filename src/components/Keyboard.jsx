@@ -7,9 +7,9 @@ const Keyboard = (props) => {
     const rowTwo = props.keyboardColor.slice(10,19)
     const rowThree = props.keyboardColor.slice(19)
 
-    const rowOneBtns = rowOne.map(l => <Button  letter={l.letter} inputToBoard={props.inputToBoard} keyboardAttr={l}/>)
-    const rowTwoBtns = rowTwo.map(l => <Button letter={l.letter} inputToBoard={props.inputToBoard} keyboardAttr={l}/>)
-    const rowThreeBtns = rowThree.map(l => <Button letter={l.letter} inputToBoard={props.inputToBoard} keyboardAttr={l}/>)
+    const rowOneBtns = rowOne.map(l => <Button key= {l.letter} letter={l.letter} inputToBoard={props.inputToBoard} keyboardAttr={l}/>)
+    const rowTwoBtns = rowTwo.map(l => <Button key= {l.letter} letter={l.letter} inputToBoard={props.inputToBoard} keyboardAttr={l}/>)
+    const rowThreeBtns = rowThree.map(l => <Button key= {l.letter} letter={l.letter} inputToBoard={props.inputToBoard} keyboardAttr={l}/>)
     
     return (
         <div>
