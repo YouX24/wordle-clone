@@ -9,6 +9,7 @@ import Error from "./components/Error";
 
 const App = () => {
 
+
   // resets the board
   const freshBoard = () => {
     const tileLetter = []

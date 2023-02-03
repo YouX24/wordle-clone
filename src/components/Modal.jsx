@@ -3,10 +3,23 @@ import { MdClose } from "react-icons/md";
 
 const Modal = (props) => {
 
-    let gameStats = JSON.parse(localStorage.getItem("gameStats"))
+    let gameStats;
     const statDivStyle = "flex items-center text-center flex-col m-2 w-12 sm:m-4"
     const statNumStyle = "text-2xl sm:text-4xl"
     const statDescStyle = "text-xs text-zinc-300"
+
+    if (!localStorage.hasOwnProperty("gameStats")) {
+        gameStats = {
+            gamesPlayed: 0,
+            gamesWon: 0,
+            gamesLost: 0,
+            winPercentage: 0,
+            currentWinStreak: 0,
+            maxStreak: 0,
+        }
+    } else {
+        gameStats = JSON.parse(localStorage.getItem("gameStats"))
+    }
 
     return (
         <div className="flex justify-center items-center absolute w-screen h-screen bg-black/[.7]">
