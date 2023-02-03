@@ -4,13 +4,13 @@ import { MdClose } from "react-icons/md"
 const Modal = (props) => {
 
     let gameStats = JSON.parse(localStorage.getItem("gameStats"))
-    const statDivStyle = "flex items-center text-center flex-col m-4 w-12"
-    const statNumStyle = "text-4xl"
+    const statDivStyle = "flex items-center text-center flex-col m-2 w-12 sm:m-4"
+    const statNumStyle = "text-2xl sm:text-4xl"
     const statDescStyle = "text-xs text-zinc-300"
 
     return (
         <div className="flex justify-center items-center absolute w-screen h-screen bg-black/[.7]">
-            <div className="relative flex items-center justify-center flex-col w-74 h-64 bg-[#121213] text-white p-8">
+            <div className="relative flex items-center justify-center flex-col m-25 h-52 w-64 sm:h-64 sm:w-96 sm:p-8 bg-[#121213] text-white">
                 <i className="absolute top-1 right-1"><MdClose className="text-red-600 text-3xl hover:cursor-pointer" onClick={props.closeModal}/></i>
                 <h2>STATISTICS</h2>
                 <div className="flex justify-center">

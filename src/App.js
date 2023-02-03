@@ -384,7 +384,7 @@ const App = () => {
     <div className="h-screen bg-[#121213] font-poppins">
       {modal && <Modal openModal={openModal} showNewGame={showNewGame} closeModal={closeModal} newGame={newGame}></Modal>}
       <Header openModal={openModal}></Header>
-      <div className="flex flex-col h-5/6 justify-center p-1">
+      <div className="flex flex-col items-center justify-center h-5/6 p-1">
         <Board tile={tile}></Board>
         <Keyboard keyboardColor={keyboardColor} inputToBoard={inputToBoard} backspace={backspace} submit={submit}></Keyboard>
       </div>

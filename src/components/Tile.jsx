@@ -14,8 +14,8 @@ const Tile = (props) => {
     }
 
     return (
-        <div className={`${color} border-2 border-zinc-700 h-14 w-14 flex justify-center items-center`}>
-            <h2 className="text-white text-4xl">{props.letter}</h2>
+        <div className={`${color} border-2 border-zinc-700 h-8 w-8 sm:h-10 sm:w-10 lg:w-12 lg:h-12 flex justify-center items-center`}>
+            <p className="text-white text-2xl sm:text-4xl">{props.letter}</p>
         </div>
     )
 }
